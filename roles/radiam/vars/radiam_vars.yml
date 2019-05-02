@@ -1,0 +1,2 @@
+repo_uri: "git.computecanada.ca/radiam/radiam-api"
+docker_compose_add_cleanjob: yes

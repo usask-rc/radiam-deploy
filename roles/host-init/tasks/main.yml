@@ -55,6 +55,7 @@
     state: stopped
   tags: cert-install
   become: yes
+  ignore_errors: yes
 
 - name: Get certifcates via LetsEncrypt certbot
   command: certbot --standalone --non-interactive --agree-tos -m "{{ admin_email_address }}" -d "{{ inventory_hostname }}" certonly
@@ -67,6 +68,7 @@
     state: started
   tags: cert-install
   become: yes
+  ignore_errors: yes
 
 - name: Cron job to renew letsencrypt certificates
   become: yes

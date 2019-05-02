@@ -1,0 +1,20 @@
+[Unit]
+Description=Docker Compose container starter
+After=docker.service network-online.target
+Requires=docker.service network-online.target
+
+[Service]
+WorkingDirectory=/etc/compose/radiam-api/api
+Type=oneshot
+RemainAfterExit=yes
+
+ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull --quiet
+ExecStart=/usr/local/bin/docker-compose -f prod.yml up -d
+
+ExecStop=/usr/local/bin/docker-compose -f prod.yml down
+
+ExecReload=/usr/local/bin/docker-compose -f prod.yml pull --quiet
+ExecReload=/usr/local/bin/docker-compose -f prod.yml up -d
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,169 @@
+---
+- include_vars: radiam_vars.yml
+
+# Configure docker-compose
+
+- name: Create configuration directory
+  file:
+    path: /etc/compose/radiam-api
+    state: directory
+    mode: 0700
+    owner: ubuntu
+    group: ubuntu
+  become: yes
+
+- name: Get updated files from git repository
+  git:
+    repo: https://{{ gituser }}:{{ gitpassword }}@{{ repo_uri }}
+    dest: /etc/compose/radiam-api
+
+- name: Validate configuration
+  command: docker-compose -f prod.yml config -q
+  args:
+    chdir: /etc/compose/radiam-api/api
+
+# Install and start services
+
+- name: Install docker-compose.service
+  copy:
+    src: docker-compose.service
+    dest: /etc/systemd/system/docker-compose.service
+  register: docker_compose_service
+  become: yes
+
+- name: Enable docker-compose service
+  systemd:
+    name: docker-compose.service
+    daemon_reload: true
+    enabled: true
+  become: yes
+
+- name: Restart service if service configuration changed
+  systemd:
+    name: docker-compose.service
+    daemon_reload: true
+    state: restarted
+  become: yes
+  when: docker_compose_service.changed and packer_build_name is not defined
+
+- name: Reload and apply configuration
+  systemd:
+    name: docker-compose.service
+    state: reloaded
+  become: yes
+
+- name: Install docker-compose-reload.service
+  copy:
+    src: docker-compose-reload.service
+    dest: /etc/systemd/system/docker-compose-reload.service
+  become: yes
+
+- name: Install docker-compose-reload.timer
+  copy:
+    src: docker-compose-reload.timer
+    dest: /etc/systemd/system/docker-compose-reload.timer
+  register: docker_compose_reload_timer
+  become: yes
+
+- name: Enable docker-compose-reload.timer
+  systemd:
+    name: docker-compose-reload.timer
+    daemon_reload: true
+    enabled: true
+  become: yes
+
+- name: Restart docker-compose-reload.timer if it changed
+  systemd:
+    name: docker-compose-reload.timer
+    daemon_reload: true
+    state: restarted
+  when: docker_compose_reload_timer.changed and packer_build_name is not defined
+  become: yes
+
+- name: Install docker-clean script
+  copy:
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      
+      function step() { echo $@; }
+      
+      step "Removing containers created / exited >= ~1h ago..."
+      CONTAINERS=$(docker ps -a | gawk '/(hours?|days?|weeks?|months?) ago\s+(Created|Exited)/{ print $1 }' | xargs)
+      [ -n "${CONTAINERS}" ] && docker rm ${CONTAINERS}
+      
+      step "Removing unused and dangling images..."
+      docker image prune -a -f
+    dest: /usr/local/bin/docker-clean
+    mode: '0755'
+    owner: 'root'
+    group: 'root'
+  when: docker_compose_add_cleanjob
+  become: yes
+
+- name: Install docker-clean.service
+  copy:
+    dest: /etc/systemd/system/docker-clean.service
+    content: |
+      [Unit]
+      Description=Clean out old containers and unused images
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/docker-clean
+  when: docker_compose_add_cleanjob
+  become: yes
+
+- name: Install docker-clean.timer
+  copy:
+    dest: /etc/systemd/system/docker-clean.timer
+    content: |
+      [Unit]
+      Description=Clean out old containers and unused images
+
+      [Timer]
+      OnCalendar=*:0
+
+      [Install]
+      WantedBy=timers.target
+  register: docker_compose_clean_timer
+  when: docker_compose_add_cleanjob
+  become: yes
+
+- name: Enable docker-clean timer
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    enabled: true
+  when: docker_compose_add_cleanjob
+  become: yes
+
+- name: Restart docker-clean.timer if it changed
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    state: restarted
+  when: docker_compose_clean_timer is defined and docker_compose_clean_timer.changed and packer_build_name is not defined and docker_compose_add_cleanjob
+  become: yes
+
+- name: Deactivate docker-clean timer
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    enabled: false
+    state: stopped
+  ignore_errors: true  # Might fail when the job is not present
+  when: not docker_compose_add_cleanjob
+  become: yes
+
+- name: Uninstall docker-clean components
+  file:
+    dest: '{{ item }}'
+    state: absent
+  with_items:
+    - /usr/local/bin/docker-clean
+    - /etc/systemd/system/docker-clean.service
+    - /etc/systemd/system/docker-clean.timer
+  when: not docker_compose_add_cleanjob
+  become: yes
+
