@@ -1,0 +1,64 @@
+# Install nginx and set up reverse proxy for registry
+
+- name: Install nginx
+  apt:
+    name: nginx
+  become: yes
+  tags: [nginx]
+
+- name: Copy nginx reverse proxy setup
+  copy:
+    src: proxy.conf
+    dest: /etc/nginx/sites-available/proxy.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags: [nginx]
+  become: yes
+
+- name: Link proxy setup to deploy.
+  file:
+    state: link
+    src: /etc/nginx/sites-available/proxy.conf
+    path: /etc/nginx/sites-enabled/proxy.conf
+  become: yes
+  tags: [nginx]
+
+- name: Remove default configuration.
+  file:
+    state: absent
+    path: /etc/nginx/sites-enabled/default
+  become: yes
+  tags: [nginx]
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: yes
+  tags: [nginx]
+
+- name: Setup docker registry init
+  copy:
+    src: populate-registry.sh
+    dest: /mnt
+    owner: ubuntu
+    group: ubuntu
+    mode: 0755
+  become: yes
+  tags: registry
+
+- name: Install docker registry start file
+  copy:
+    src: rc.local
+    dest: /etc/rc.local
+    owner: root
+    group: root
+    mode: 0755
+  become: yes
+  tags: registry
+
+- name: Start docker registry
+  command: /etc/rc.local
+  become: yes
+  tags: registry

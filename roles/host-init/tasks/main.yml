@@ -1,0 +1,192 @@
+---
+- include_vars: host-init-vars.yml
+
+# Add users, certs and set up hosts.
+
+- name: Add local host list.
+  become: yes
+  copy: src=hosts dest=/etc/ owner=root group=root mode=0644
+  tags: hosts-setup
+
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+  become: yes
+  tags: hosts-setup
+
+- name: Set hostname in /etc/
+  command: echo {{ inventory_hostname }} > /etc/hostname
+  become: yes
+  tags: hosts-setup
+
+# Add certificates
+- name: Add the certbot repository to apt
+  apt_repository:
+    repo: 'ppa:certbot/certbot'
+  become: yes
+  tags: cert-install
+
+- name: Update all packages
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: yes
+  tags: cert-install
+
+- name: Add needed early stage packages.
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - git
+    - python-pip
+    - python3-pip
+    - python-pycurl
+    - software-properties-common
+    - apt-transport-https
+    - curl
+    - software-properties-common
+    - certbot
+  tags: [install-packages]
+  become: yes
+
+- name: Stop nginx to renew certs.
+  service:
+    service: nginx
+    state: stopped
+  tags: cert-install
+  become: yes
+
+- name: Get certifcates via LetsEncrypt certbot
+  command: certbot --standalone --non-interactive --agree-tos -m "{{ admin_email_address }}" -d "{{ inventory_hostname }}" certonly
+  become: yes
+  tags: cert-install
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+  tags: cert-install
+  become: yes
+
+- name: Cron job to renew letsencrypt certificates
+  become: yes
+  cron:
+      hour: 6
+      minute: 0
+      day: 1,15
+      job: "service nginx stop && certbot renew && service nginx start"
+      name: "Renew letsencrypts certificates"
+      state: present
+      user: root
+  tags: cert-install
+
+- name: Link correct certificate private key for nginx
+  file:
+    state: link
+    path: /etc/ssl/private/frdr.key
+    src: /etc/letsencrypt/live/{{ inventory_hostname }}/privkey.pem
+  become: yes
+  tags: cert-install
+
+- name: Link correct certificage for nginx
+  file:
+    state: link
+    path: /etc/ssl/certs/frdr.crt
+    src: /etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem
+  become: yes
+  tags: cert-install
+
+# Update packages and install some early dependencies.
+
+- name: Update all packages
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: yes
+  tags: cert-install
+
+# Install docker
+
+- name: Add Docker apt repo key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: yes
+  tags: [install-packages]
+
+- name: Add distro-specific Docker repo.
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+  become: yes
+  tags: [install-packages, registry]
+
+- name: Update all apt packages
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: yes
+  tags: [install-packages, registry]
+
+- name: Install docker
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - docker-ce
+  become: yes
+  tags: [install-packages, registry]
+
+- name: Add ubuntu to docker group
+  user:
+      name: ubuntu
+      groups: docker
+  become: yes
+  tags: [install-packages, registry]
+
+- name: Install newest docker-compose from web.
+  uri:
+    url: https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    status_code: [200, 304]
+  become: yes
+  tags: [install-packages, registry]
+
+- name: Make newest docker-compose executable.
+  file:
+    path: /usr/local/bin/docker-compose
+    mode: 0755
+  become: yes
+  tags: [install-packages, registry]
+
+# Add cron jobs for updating packages
+
+- name: Add cron job for weekly updates.
+  cron:
+    name: Check for updates.
+    day: 1,15
+    hour: 1
+    minute: 0
+    job: "apt-get update"
+  become: yes
+  tags: hosts-setup
+
+- name: Add cron job for weekly updates.
+  cron:
+    name: Do dist-upgrade.
+    day: 1,15
+    hour: 2
+    minute: 0
+    job: "(export PATH=/bin:/usr/bin:/sbin:/usr/sbin && export DEBIAN_FRONTEND=noninteractive && apt-get dist-upgrade -y > /dev/null)"
+  become: yes
+  tags: hosts-setup
+
+- name: Add cron job to reboot after kernel upgrades
+  cron:
+    name: Reboot after kernel upgrades
+    day: 1,15
+    hour: 3
+    minute: 0
+    job: "(stat /var/run/reboot-required && /sbin/reboot)"
+  become: yes
+  tags: hosts-setup
+

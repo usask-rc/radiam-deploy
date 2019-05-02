@@ -1,0 +1,31 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+# Set up local loopback device for OSF
+# sudo ifconfig lo:0 192.168.168.167 netmask 255.255.255.255 up
+# Enable for OSF postgres to work under load
+# echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+/usr/bin/docker system prune -af
+/usr/bin/docker rm -f  registry || true
+/usr/bin/docker run -d \
+                --restart=always \
+                --name registry \
+                 -v /etc/letsencrypt/:/certs \
+                 -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
+                 -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/live/$(/bin/hostname)/fullchain.pem \
+                 -e REGISTRY_HTTP_TLS_KEY=/certs/live/$(/bin/hostname)/privkey.pem \
+                 -p 5000:5000 registry:2
+
+/mnt/populate-registry.sh
+exit 0
+

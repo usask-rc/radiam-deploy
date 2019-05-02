@@ -1,0 +1,8 @@
+127.0.0.1   localhost   
+
+# local routes for internal traffic
+
+192.168.175.6   dev1.radiam.ca
+192.168.175.8   dev2.radiam.ca
+192.168.175.11  dev3.radiam.ca
+192.168.175.10  dev4.radiam.ca
