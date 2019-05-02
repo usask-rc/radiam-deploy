@@ -1,0 +1,6 @@
+---
+- hosts: 
+       - radiam-jenkins-hosts
+
+  roles:
+       - host-init 
