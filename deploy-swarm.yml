@@ -1,0 +1,10 @@
+---
+- name: Initial Host Setup.
+  hosts: all
+  roles:
+    - host-init
+
+- name: Populate Swarm
+  hosts: all
+  roles:
+    - ansible-dockerswarm
