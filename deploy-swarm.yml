@@ -1,10 +1,21 @@
 ---
-- name: Initial Host Setup.
-  hosts: all
-  roles:
-    - host-init
+-  hosts: 
+     - docker_swarm_manager
+     - docker_swarm_worker
 
-- name: Populate Swarm
-  hosts: all
-  roles:
-    - ansible-dockerswarm
+   vars_prompt:
+    - name: "gituser"
+      prompt: "Enter radiam-api git username"
+      private: no
+    - name: "gitpassword"
+      prompt: "Enter your radiam git repo password"
+      private: yes
+
+   roles:
+     #- host-init
+     - ansible-dockerswarm
+
+#- name: Populate Swarm
+#  hosts: all
+#  roles:
+#    - ansible-dockerswarm

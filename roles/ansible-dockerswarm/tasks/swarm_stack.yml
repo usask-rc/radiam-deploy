@@ -1,0 +1,25 @@
+---
+# Configure docker-compose
+
+- name: Create configuration directory
+  file:
+    path: /etc/compose/radiam-api
+    state: directory
+    mode: 0700
+    owner: ubuntu
+    group: ubuntu
+  become: yes
+
+- name: Get updated files from git repository
+  git:
+    repo: https://{{ gituser }}:{{ gitpassword }}@{{ repo_uri }}
+    dest: /etc/compose/radiam-api
+
+- name: Validate configuration
+  command: docker-compose -f prod.yml config -q
+  args:
+    chdir: /etc/compose/radiam-api/api
+
+- name: Deploy stack on swarm
+  shell: docker stack deploy --prune --compose-file /etc/compose/radiam-api/api/prod.yml radiam-full
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
