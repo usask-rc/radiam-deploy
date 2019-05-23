@@ -12,10 +12,5 @@
       private: yes
 
    roles:
-     #- host-init
+     - host-init
      - ansible-dockerswarm
-
-#- name: Populate Swarm
-#  hosts: all
-#  roles:
-#    - ansible-dockerswarm
