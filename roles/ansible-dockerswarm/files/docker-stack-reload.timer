@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh images and update containers
+Requires=docker-stack.service
+After=docker-stack.service
+
+[Timer]
+OnCalendar=*:0/15
+
+[Install]
+WantedBy=timers.target
