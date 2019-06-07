@@ -1,6 +1,7 @@
 ---
 # Configure docker-stack
 - include_vars: ansible-dockerswarm_vars.yml
+- include_vars: encrypted_vars.yml
 
 - name: Create configuration directory
   file:
@@ -15,6 +16,34 @@
   git:
     repo: https://{{ gituser }}:{{ gitpassword }}@{{ repo_uri }}
     dest: /etc/compose/radiam-api
+
+- name: Add django secret key to swarm
+  docker_secret:
+    name: PROD_SECRET_KEY
+    data: "{{ prod_secret_key }}"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
+
+- name: Add db_user to swarm
+  docker_secret:
+    name: PROD_DB_USER
+    data: "{{ prod_db_user }}"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
+
+- name: Add db password to swarm
+  docker_secret:
+    name: PROD_DB_PASSWORD
+    data: "{{ prod_db_password }}"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
+
+- name: Add django debug value to swarm
+  docker_secret:
+    name: DJANGO_DEBUG
+    data: "False"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
 
 - name: Deploy stack on swarm
   shell: docker stack deploy --prune --compose-file /etc/compose/radiam-api/api/prod.yml radiam-full
@@ -33,6 +62,7 @@
     dest: /etc/systemd/system/docker-stack.service
   register: docker_stack_service
   become: yes
+  tags: [systemd]
 
 - name: Enable docker-stack service
   systemd:
@@ -40,6 +70,7 @@
     daemon_reload: true
     enabled: true
   become: yes
+  tags: [systemd]
 
 - name: Restart service if service configuration changed
   systemd:
@@ -48,18 +79,22 @@
     state: restarted
   become: yes
   when: docker_stack_service.changed and packer_build_name is not defined
+  tags: [systemd]
 
 - name: Reload and apply configuration
   systemd:
     name: docker-stack.service
     state: reloaded
   become: yes
+  tags: [systemd]
 
 - name: Install docker-stack-reload.service
   copy:
     src: docker-stack-reload.service
     dest: /etc/systemd/system/docker-stack-reload.service
   become: yes
+  when: docker_stack_auto_reload
+  tags: [systemd]
 
 - name: Install docker-stack-reload.timer
   copy:
@@ -67,6 +102,8 @@
     dest: /etc/systemd/system/docker-stack-reload.timer
   register: docker_stack_reload_timer
   become: yes
+  when: docker_stack_auto_reload
+  tags: [systemd]
 
 - name: Enable docker-stack-reload.timer
   systemd:
@@ -74,14 +111,17 @@
     daemon_reload: true
     enabled: true
   become: yes
+  when: docker_stack_auto_reload
+  tags: [systemd]
 
 - name: Restart docker-stack-reload.timer if it changed
   systemd:
     name: docker-stack-reload.timer
     daemon_reload: true
     state: restarted
-  when: docker_stack_reload_timer.changed and packer_build_name is not defined
+  when: docker_stack_reload_timer.changed and packer_build_name is not defined and docker_stack_auto_reload
   become: yes
+  tags: [systemd]
 
 - name: Install docker-clean script
   copy:
@@ -103,6 +143,7 @@
     group: 'root'
   when: docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Install docker-clean.service
   copy:
@@ -116,6 +157,7 @@
       ExecStart=/usr/local/bin/docker-clean
   when: docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Install docker-clean.timer
   copy:
@@ -132,6 +174,7 @@
   register: docker_stack_clean_timer
   when: docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Enable docker-clean timer
   systemd:
@@ -140,6 +183,7 @@
     enabled: true
   when: docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Restart docker-clean.timer if it changed
   systemd:
@@ -148,6 +192,7 @@
     state: restarted
   when: docker_stack_clean_timer is defined and docker_stack_clean_timer.changed and packer_build_name is not defined and docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Deactivate docker-clean timer
   systemd:
@@ -158,6 +203,7 @@
   ignore_errors: true  # Might fail when the job is not present
   when: not docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 
 - name: Uninstall docker-clean components
   file:
@@ -169,4 +215,5 @@
     - /etc/systemd/system/docker-clean.timer
   when: not docker_stack_add_cleanjob
   become: yes
+  tags: [systemd]
 

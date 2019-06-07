@@ -3,7 +3,7 @@
 - name: Add the Docker administrators to the Docker group
   user:
     name: "{{ item }}"
-    groups: "{{ docker_group }}"
+    groups: docker
     append: true
   register: addtogroup
   become: true

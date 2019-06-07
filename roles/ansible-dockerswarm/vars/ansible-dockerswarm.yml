@@ -20,11 +20,19 @@ docker_swarm_port: 2377
 
 # List of the users in the Docker group
 docker_admin_users:
-  - "{{ ansible_user | default(ansible_user_id) }}" # if ansible_user is not defined, we default to the ansible ansible_user_id fact
+  - "ubuntu"
 
 # Switches disabling the docker-engine, docker group and swarm-mode setup.
-skip_engine: True# if true, skip the docker engine installation
-skip_group: True# if true, does not add the docker_admin_users to the docker_group_name
+skip_engine: True # if true, skip the docker engine installation
+skip_group: False # if true, does not add the docker_admin_users to the docker_group_name
 skip_swarm: False  # if true, skip the swarm setup
 skip_docker_py: False # if true, skip the docker-py
 repo_uri: "git.computecanada.ca/radiam/radiam-api"
+docker_stack_add_cleanjob: True # Kill dangling images on a timer.
+docker_stack_auto_reload: False # Auto-reload new images from registry.
+
+# Secure credential passthrough to encrypted vars file
+
+prod_db_user: "{{ vault_prod_db_user }}"
+prod_db_password: "{{ vault_prod_db_password }}"
+prod_secret_key: "{{ vault_prod_secret_key }}"
