@@ -26,15 +26,22 @@
 
 - name: Add db_user to swarm
   docker_secret:
-    name: PROD_DB_USER
+    name: POSTGRES_USER
     data: "{{ prod_db_user }}"
     state: present
   when: "inventory_hostname == groups['docker_swarm_manager'][0]"
 
 - name: Add db password to swarm
   docker_secret:
-    name: PROD_DB_PASSWORD
+    name: POSTGRES_PASSWORD
     data: "{{ prod_db_password }}"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
+
+- name: Add db name to swarm
+  docker_secret:
+    name: POSTGRES_DB
+    data: "{{ prod_db_name }}"
     state: present
   when: "inventory_hostname == groups['docker_swarm_manager'][0]"
 

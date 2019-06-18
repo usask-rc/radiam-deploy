@@ -35,4 +35,5 @@ docker_stack_auto_reload: False # Auto-reload new images from registry.
 
 prod_db_user: "{{ vault_prod_db_user }}"
 prod_db_password: "{{ vault_prod_db_password }}"
+prod_db_name: "{{ vault_prod_db_name }}"
 prod_secret_key: "{{ vault_prod_secret_key }}"

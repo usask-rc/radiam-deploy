@@ -4,5 +4,11 @@
   pip:
     name: docker
     state: present
-  when: (ansible_version is not defined) or (ansible_version is defined
-    and ansible_version.full | version_compare('2.2.0.0', '>='))
+  become: yes
+
+- name: Install docker python library - Python3
+  pip:
+    name: docker
+    state: present
+    executable: pip3
+  become: yes
