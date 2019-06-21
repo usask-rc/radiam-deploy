@@ -52,6 +52,13 @@
     state: present
   when: "inventory_hostname == groups['docker_swarm_manager'][0]"
 
+- name: Add sendgrid API key to swarm.
+  docker_secret:
+    name: SENDGRID_API_KEY
+    data: "{{ sendgrid_api_key }}"
+    state: present
+  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
+
 - name: Deploy stack on swarm
   shell: docker stack deploy --prune --compose-file /etc/compose/radiam-api/api/prod.yml radiam-full
   when: "inventory_hostname == groups['docker_swarm_manager'][0]"
