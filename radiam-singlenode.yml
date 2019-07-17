@@ -12,4 +12,6 @@
 
   roles:
        - host-init 
+       - docker-hosts
+       - registry-client
        - radiam

@@ -1,0 +1,67 @@
+- name: Add Docker apt repo key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  become: yes
+  tags: [docker]
+
+- name: Add distro-specific Docker repo.
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+  become: yes
+  tags: [docker]
+
+- name: Update all apt packages
+  become: yes
+  apt:
+    update_cache: yes
+    upgrade: yes
+  tags: [docker]
+
+- name: Add needed early stage packages.
+  apt:
+    name: [python-pip, python3-pip, python-pycurl, apt-transport-https, curl, software-properties-common]
+  tags: [docker]
+  become: yes
+
+- name: Install docker
+  apt:
+    name: docker-ce
+  become: yes
+  tags: [docker]
+
+- name: Add ubuntu to docker group
+  user:
+      name: ubuntu
+      groups: docker
+  become: yes
+  tags: [docker]
+
+- name: Install newest docker-compose from web.
+  uri:
+    url: https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    status_code: [200, 304]
+  become: yes
+  tags: [docker]
+
+- name: Make newest docker-compose executable.
+  file:
+    path: /usr/local/bin/docker-compose
+    mode: 0755
+  become: yes
+  tags: [docker]
+
+- name: Install docker python library for python2
+  pip:
+    name: docker
+    state: present
+  become: yes
+
+- name: Install docker python library for python3
+  pip:
+    name: docker
+    state: present
+    executable: pip3
+  become: yes

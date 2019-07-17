@@ -1,7 +1,7 @@
 ---
-- hosts: 
+- hosts:
        - radiam-jenkins-hosts
 
   roles:
-       - host-init 
+       - docker-hosts
        - registry-client

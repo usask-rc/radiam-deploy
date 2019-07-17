@@ -1,0 +1,22 @@
+# 'docker login' to registry to get cached credentials so a host can pull/push to the repository.
+
+- include_vars:
+    dir: vars
+    extensions: [yml]
+
+- name: Login to docker registry to cache credentials.
+  docker_login:
+    registry: "{{ groups['registry-hosts'][0] }}"
+    username: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+  become: yes
+
+- name: When jenkins host, cache credentials under the jenkins username.
+  docker_login:
+    registry: "{{ groups['registry-hosts'][0] }}"
+    username: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+  when: "inventory_hostname == groups['radiam-jenkins-hosts'][0]"
+  become_user: jenkins
+  become: yes
+

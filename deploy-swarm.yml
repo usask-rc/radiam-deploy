@@ -13,4 +13,7 @@
 
    roles:
      - host-init
+     - docker-hosts
+     - registry-client
      - ansible-dockerswarm
+

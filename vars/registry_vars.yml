@@ -1,0 +1,2 @@
+registry_user: radiam
+registry_password: "{{ vault_registry_password }}"

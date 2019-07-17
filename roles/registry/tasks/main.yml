@@ -1,10 +1,20 @@
 # Install nginx and set up reverse proxy for registry
 
+- include_vars:
+    dir: vars
+    extensions: [yml]
+
 - name: Install nginx
   apt:
     name: nginx
   become: yes
   tags: [nginx]
+
+- name: Stop nginx
+  service:
+    name: nginx
+    state: stopped
+  become: yes
 
 - name: Copy nginx reverse proxy setup
   copy:
@@ -30,6 +40,19 @@
     path: /etc/nginx/sites-enabled/default
   become: yes
   tags: [nginx]
+
+- name: Generate .htpasswd credentials for registry
+  htpasswd:
+    path: /etc/nginx/conf.d/nginx.htpasswd
+    owner: root
+    group: www-data
+    mode: 0640
+    name: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+  become: yes
+
+
+# Docker login to generate creds for root at end
 
 - name: Restart nginx
   service:
@@ -57,6 +80,13 @@
     mode: 0755
   become: yes
   tags: registry
+
+- name: Login to docker registry to create cached credentials for root user.
+  docker_login:
+    registry: "{{ inventory_hostname }}"
+    username: "{{ registry_user }}"
+    password: "{{ registry_password }}"
+  become: yes
 
 - name: Start docker registry
   command: /etc/rc.local

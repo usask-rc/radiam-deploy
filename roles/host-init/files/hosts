@@ -5,7 +5,7 @@
 192.168.211.8    dev1-am-1.frdr.ca dev1-am-1 
 192.168.211.5    dev1-am-2.frdr.ca dev1-am-2 
 
-192.168.5.8      test-am-1.frdr.ca test-am-1 
+192.168.5.9      test-am-1.frdr.ca test-am-1 
 192.168.5.11     test-am-2.frdr.ca test-am-2 
 
 192.168.164.5    demo-am-1.frdr.ca demo-am-1
