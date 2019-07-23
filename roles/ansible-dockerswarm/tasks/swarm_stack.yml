@@ -76,7 +76,6 @@
     dest: /etc/systemd/system/docker-stack.service
   register: docker_stack_service
   become: yes
-  tags: [systemd]
 
 - name: Enable docker-stack service
   systemd:
@@ -84,7 +83,6 @@
     daemon_reload: true
     enabled: true
   become: yes
-  tags: [systemd]
 
 - name: Restart service if service configuration changed
   systemd:
@@ -93,14 +91,12 @@
     state: restarted
   become: yes
   when: docker_stack_service.changed and packer_build_name is not defined
-  tags: [systemd]
 
 - name: Reload and apply configuration
   systemd:
     name: docker-stack.service
     state: reloaded
   become: yes
-  tags: [systemd]
 
 - name: Install docker-stack-reload.service
   copy:
@@ -108,7 +104,6 @@
     dest: /etc/systemd/system/docker-stack-reload.service
   become: yes
   when: docker_stack_auto_reload
-  tags: [systemd]
 
 - name: Install docker-stack-reload.timer
   copy:
@@ -117,7 +112,6 @@
   register: docker_stack_reload_timer
   become: yes
   when: docker_stack_auto_reload
-  tags: [systemd]
 
 - name: Enable docker-stack-reload.timer
   systemd:
@@ -126,7 +120,6 @@
     enabled: true
   become: yes
   when: docker_stack_auto_reload
-  tags: [systemd]
 
 - name: Restart docker-stack-reload.timer if it changed
   systemd:
@@ -135,99 +128,6 @@
     state: restarted
   when: docker_stack_reload_timer.changed and packer_build_name is not defined and docker_stack_auto_reload
   become: yes
-  tags: [systemd]
 
-- name: Install docker-clean script
-  copy:
-    content: |
-      #!/bin/bash
-      set -euo pipefail
 
-      function step() { echo $@; }
-
-      step "Removing containers created / exited >= ~1h ago..."
-      CONTAINERS=$(docker ps -a | gawk '/(hours?|days?|weeks?|months?) ago\s+(Created|Exited)/{ print $1 }' | xargs)
-      [ -n "${CONTAINERS}" ] && docker rm ${CONTAINERS}
-
-      step "Removing unused and dangling images..."
-      docker image prune -a -f
-    dest: /usr/local/bin/docker-clean
-    mode: '0755'
-    owner: 'root'
-    group: 'root'
-  when: docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Install docker-clean.service
-  copy:
-    dest: /etc/systemd/system/docker-clean.service
-    content: |
-      [Unit]
-      Description=Clean out old containers and unused images
-
-      [Service]
-      Type=oneshot
-      ExecStart=/usr/local/bin/docker-clean
-  when: docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Install docker-clean.timer
-  copy:
-    dest: /etc/systemd/system/docker-clean.timer
-    content: |
-      [Unit]
-      Description=Clean out old containers and unused images
-
-      [Timer]
-      OnCalendar=*:0
-
-      [Install]
-      WantedBy=timers.target
-  register: docker_stack_clean_timer
-  when: docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Enable docker-clean timer
-  systemd:
-    name: docker-clean.timer
-    daemon_reload: true
-    enabled: true
-  when: docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Restart docker-clean.timer if it changed
-  systemd:
-    name: docker-clean.timer
-    daemon_reload: true
-    state: restarted
-  when: docker_stack_clean_timer is defined and docker_stack_clean_timer.changed and packer_build_name is not defined and docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Deactivate docker-clean timer
-  systemd:
-    name: docker-clean.timer
-    daemon_reload: true
-    enabled: false
-    state: stopped
-  ignore_errors: true  # Might fail when the job is not present
-  when: not docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
-
-- name: Uninstall docker-clean components
-  file:
-    dest: '{{ item }}'
-    state: absent
-  with_items:
-    - /usr/local/bin/docker-clean
-    - /etc/systemd/system/docker-clean.service
-    - /etc/systemd/system/docker-clean.timer
-  when: not docker_stack_add_cleanjob
-  become: yes
-  tags: [systemd]
 

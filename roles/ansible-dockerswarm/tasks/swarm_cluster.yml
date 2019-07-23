@@ -1,18 +1,8 @@
 ---
-
-#- name: Create a custom swarm network
-#  docker_network:
-#    name: docker_gwbridge
-#    driver_options:
-#      com.docker.network.bridge.enable_icc: "false"
-#      com.docker.network.bridge.enable_ip_masquerade: "true"
-#      com.docker.network.bridge.name: docker_gwbridge
-#    ipam_options:
-#      subnet: "{{ docker_swarm_network }}"
-#      gateway: "{{ docker_swarm_network | ipaddr('net') | ipaddr('1') | ipaddr('ip') }}"
-#  tags:
-#    - skip_ansible_lint # Suppressing the linter
-#  when: docker_swarm_network is defined and docker_swarm_network | ipaddr('net')
+- include_vars: ansible-dockerswarm_vars.yml
+  tags: [systemd]
+- include_vars: encrypted_vars.yml
+  tags: [systemd]
 
 - name: Check if "Swarm Mode" is enabled.
   shell: docker info
@@ -87,6 +77,91 @@
     and inventory_hostname != groups['docker_swarm_manager'][0]"
   tags:
     - skip_ansible_lint # Suppressing the linter
+
+- name: Install docker-clean script
+  copy:
+    content: |
+      #!/bin/bash
+      docker system prune -a -f
+    dest: /usr/local/bin/docker-clean
+    mode: '0755'
+    owner: 'root'
+    group: 'root'
+  when: docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Install docker-clean.service
+  copy:
+    dest: /etc/systemd/system/docker-clean.service
+    content: |
+      [Unit]
+      Description=Clean out old containers and unused images
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/docker-clean
+  when: docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Install docker-clean.timer
+  copy:
+    dest: /etc/systemd/system/docker-clean.timer
+    content: |
+      [Unit]
+      Description=Clean out old containers and unused images
+
+      [Timer]
+      OnCalendar=*:0
+
+      [Install]
+      WantedBy=timers.target
+  register: docker_stack_clean_timer
+  when: docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Enable docker-clean timer
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    enabled: true
+  when: docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Restart docker-clean.timer if it changed
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    state: restarted
+  when: docker_stack_clean_timer is defined and docker_stack_clean_timer.changed and docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Deactivate docker-clean timer
+  systemd:
+    name: docker-clean.timer
+    daemon_reload: true
+    enabled: false
+    state: stopped
+  ignore_errors: true  # Might fail when the job is not present
+  when: not docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
+
+- name: Uninstall docker-clean components
+  file:
+    dest: '{{ item }}'
+    state: absent
+  with_items:
+    - /usr/local/bin/docker-clean
+    - /etc/systemd/system/docker-clean.service
+    - /etc/systemd/system/docker-clean.timer
+  when: not docker_stack_add_cleanjob
+  become: yes
+  tags: [systemd]
 
 #- name: Get list of labels
 #  command: >-

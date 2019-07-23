@@ -26,8 +26,7 @@
 
 # Setup the Docker Swarm Cluster
 - include: swarm_cluster.yml
-  when: not skip_swarm
-  tags: [stack-deploy]
+  tags: [swarm-deploy]
 
 # Deploy a Stack on the Docker Swarm Cluster
 - include: swarm_stack.yml

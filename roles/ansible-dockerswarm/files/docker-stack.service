@@ -8,11 +8,11 @@ WorkingDirectory=/etc/compose/radiam-api/api
 Type=oneshot
 RemainAfterExit=yes
 
-ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull --quiet
+-ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull --quiet
 ExecStart=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
 ExecStop=/usr/bin/docker stack rm radiam-full
 
-ExecReload=/usr/local/bin/docker-compose -f prod.yml pull --quiet
+-ExecReload=/usr/local/bin/docker-compose -f prod.yml pull --quiet
 ExecReload=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
 
 [Install]
