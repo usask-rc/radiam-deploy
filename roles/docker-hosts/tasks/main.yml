@@ -1,3 +1,7 @@
+---
+- include_vars: docker-hosts.vars
+  tags: [docker]
+
 - name: Add Docker apt repo key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -38,6 +42,20 @@
   become: yes
   tags: [docker]
 
+- name: Add the Docker administrators to the Docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  register: addtogroup
+  become: true
+  with_items: "{{ docker_admin_users }}"
+  tags: [docker]
+
+# See https://stackoverflow.com/a/44753457
+- name: Reset ansible connection after group changes to allow actions as non-priv user
+  meta: reset_connection
+
 - name: Install newest docker-compose from web.
   uri:
     url: https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64
@@ -58,6 +76,7 @@
     name: docker
     state: present
   become: yes
+  tags: [docker]
 
 - name: Install docker python library for python3
   pip:
@@ -65,3 +84,5 @@
     state: present
     executable: pip3
   become: yes
+  tags: [docker]
+
