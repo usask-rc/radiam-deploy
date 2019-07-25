@@ -23,9 +23,13 @@ skip_engine: True # if true, skip the docker engine installation
 skip_group: False # if true, does not add the docker_admin_users to the docker_group_name
 skip_swarm: False  # if true, skip the swarm setup
 skip_docker_py: False # if true, skip the docker-py
-repo_uri: "git.computecanada.ca/radiam/radiam-api"
 docker_stack_add_cleanjob: True # Kill dangling images on a timer.
-docker_stack_auto_reload: True# Auto-reload new images from registry.
+docker_stack_auto_reload: True # Auto-reload new images from registry.
+
+
+repo_uri: "git.computecanada.ca/radiam/radiam-api"
+service_def_path: "api/prod.yml"
+
 
 # Secure credential passthrough to encrypted vars file
 

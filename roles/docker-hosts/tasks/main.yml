@@ -35,13 +35,6 @@
   become: yes
   tags: [docker]
 
-- name: Add ubuntu to docker group
-  user:
-      name: ubuntu
-      groups: docker
-  become: yes
-  tags: [docker]
-
 - name: Add the Docker administrators to the Docker group
   user:
     name: "{{ item }}"
@@ -83,6 +76,13 @@
     name: docker
     state: present
     executable: pip3
+  become: yes
+  tags: [docker]
+
+- name: Start docker daemon
+  service:
+    name: docker
+    state: restarted
   become: yes
   tags: [docker]
 

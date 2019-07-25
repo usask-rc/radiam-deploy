@@ -4,16 +4,16 @@ After=docker.service network-online.target
 Requires=docker.service network-online.target
 
 [Service]
-WorkingDirectory=/etc/compose/radiam-api/api
+WorkingDirectory=/etc/compose/
 Type=oneshot
 RemainAfterExit=yes
 
 -ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull --quiet
-ExecStart=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
-ExecStop=/usr/bin/docker stack rm radiam-full
+ExecStart=/usr/bin/docker stack deploy --prune --compose-file prod.yml prod-stack
+ExecStop=/usr/bin/docker stack rm prod-stack
 
 -ExecReload=/usr/local/bin/docker-compose -f prod.yml pull --quiet
-ExecReload=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
+ExecReload=/usr/bin/docker stack deploy --prune --compose-file prod.yml prod-stack
 
 [Install]
 WantedBy=multi-user.target

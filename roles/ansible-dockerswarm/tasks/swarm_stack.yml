@@ -5,17 +5,23 @@
 
 - name: Create configuration directory
   file:
-    path: /etc/compose/radiam-api
+    path: /etc/compose/
     state: directory
-    mode: 0700
+    mode: 0755
     owner: ubuntu
     group: ubuntu
   become: yes
+  tags: [service-def-path]
 
-- name: Get updated files from git repository
-  git:
-    repo: https://{{ gituser }}:{{ gitpassword }}@{{ repo_uri }}
-    dest: /etc/compose/radiam-api
+- name: Install stack definition file
+  copy:
+    src: prod.yml
+    dest: /etc/compose/prod.yml
+    mode: 0640
+    owner: ubuntu
+    group: ubuntu
+  tags: [service-def-path]
+  become: yes
 
 - name: Add django secret key to swarm
   docker_secret:
@@ -59,10 +65,6 @@
     state: present
   when: "inventory_hostname == groups['docker_swarm_manager'][0]"
 
-- name: Deploy stack on swarm
-  shell: docker stack deploy --prune --compose-file /etc/compose/radiam-api/api/prod.yml radiam-full
-  when: "inventory_hostname == groups['docker_swarm_manager'][0]"
-
 - name: Validate configuration
   command: docker-compose -f prod.yml config -q
   args:
@@ -76,6 +78,7 @@
     dest: /etc/systemd/system/docker-stack.service
   register: docker_stack_service
   become: yes
+  tags: [service-def-path]
 
 - name: Enable docker-stack service
   systemd:
@@ -83,6 +86,7 @@
     daemon_reload: true
     enabled: true
   become: yes
+  tags: [service-def-path]
 
 - name: Restart service if service configuration changed
   systemd:
@@ -91,12 +95,14 @@
     state: restarted
   become: yes
   when: docker_stack_service.changed and packer_build_name is not defined
+  tags: [service-def-path]
 
 - name: Reload and apply configuration
   systemd:
     name: docker-stack.service
     state: reloaded
   become: yes
+  tags: [service-def-path]
 
 - name: Install docker-stack-reload.service
   copy:
@@ -104,6 +110,7 @@
     dest: /etc/systemd/system/docker-stack-reload.service
   become: yes
   when: docker_stack_auto_reload
+  tags: [service-def-path]
 
 - name: Install docker-stack-reload.timer
   copy:
@@ -112,6 +119,7 @@
   register: docker_stack_reload_timer
   become: yes
   when: docker_stack_auto_reload
+  tags: [service-def-path]
 
 - name: Enable docker-stack-reload.timer
   systemd:
@@ -120,6 +128,7 @@
     enabled: true
   become: yes
   when: docker_stack_auto_reload
+  tags: [service-def-path]
 
 - name: Restart docker-stack-reload.timer if it changed
   systemd:
@@ -128,6 +137,5 @@
     state: restarted
   when: docker_stack_reload_timer.changed and packer_build_name is not defined and docker_stack_auto_reload
   become: yes
-
-
+  tags: [service-def-path]
 

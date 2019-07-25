@@ -3,14 +3,6 @@
      - docker_swarm_manager
      - docker_swarm_worker
 
-   vars_prompt:
-    - name: "gituser"
-      prompt: "Enter radiam-api git username"
-      private: no
-    - name: "gitpassword"
-      prompt: "Enter your radiam git repo password"
-      private: yes
-
    roles:
      - host-init
      - docker-hosts
