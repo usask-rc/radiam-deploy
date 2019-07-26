@@ -24,6 +24,10 @@
 - include: swarm_cluster.yml
   tags: [swarm-deploy]
 
+# Add secrets to swarm
+- include: swarm-secrets.yml
+  tags: [swarm-secrets]
+
 # Deploy a Stack on the Docker Swarm Cluster
 - include: swarm_stack.yml
   when: not skip_swarm and inventory_hostname == groups['docker_swarm_manager'][0]
