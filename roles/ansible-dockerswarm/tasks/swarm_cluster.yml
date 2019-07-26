@@ -163,36 +163,13 @@
   become: yes
   tags: [systemd]
 
-#- name: Get list of labels
-#  command: >-
-#         docker inspect
-#         --format {% raw %}'{{range $key, $value := .Spec.Labels}}{{printf "%s\n" $key}}{{end}}'{% endraw %}
-#         {{ ansible_hostname }}
-#  register: docker_swarm_labels
-#  changed_when: False
-#  delegate_to: "{{ groups['docker_swarm_manager'][0] }}"
-#  delegate_facts: True
-#  tags:
-#    - skip_ansible_lint
-#    - swarm_labels
+- name: Add registry hostname as label to master nodes.
+  docker_node:
+    hostname: "{{ ansible_fqdn }}"
+    labels:
+      registry_hostname: "{{ groups['registry-hosts'][0] }}"
+    labels_state: replace
+  become: yes
+  when: "'docker_swarm_manager' in group_names"
+  tags: [swarm-labels]
 
-#- name: Remove labels from swarm node
-#  command: docker node update --label-rm {{ item }} {{ ansible_hostname }}
-#  with_items: "{{ docker_swarm_labels.stdout_lines }}"
-#  when: item not in swarm_labels
-#  delegate_to: "{{ groups['docker_swarm_manager'][0] }}"
-#  delegate_facts: True
-#  tags:
-#    - skip_ansible_lint
-#    - swarm_labels
-
-#- name: Asign labels to swarm nodes | if any
-#  command: docker node update --label-add {{ item }}=true {{ ansible_hostname }}
-#  when: item not in docker_swarm_labels.stdout_lines
-#  with_items:
-#    - "{{ swarm_labels  | default([]) }}"
-#  delegate_to: "{{ groups['docker_swarm_manager'][0] }}"
-#  delegate_facts: True
-#  tags:
-#    - skip_ansible_lint
-#    - swarm_labels

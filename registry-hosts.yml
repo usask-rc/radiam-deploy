@@ -3,4 +3,5 @@
        - registry-hosts
   roles:
        - host-init
+       - docker-hosts
        - registry

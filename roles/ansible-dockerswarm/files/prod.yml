@@ -4,7 +4,7 @@ services:
 
   # Elasticsearch. See README for necessary host settings.
   elasticsearch:
-    image: build.radiam.ca/elastic
+    image: "{{.Node.Labels.registry_hostname}}"/elastic
     volumes:
       - elasticsearch_data_vol:/usr/share/elasticsearch/data
     environment:
@@ -25,7 +25,7 @@ services:
 
   # Postgres
   db:
-    image: build.radiam.ca/postgres
+    image: "{{.Node.Labels.registry_hostname}}"/postgres
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -50,7 +50,7 @@ services:
 
   # Memcached for Django
   memcached:
-    image: build.radiam.ca/memcached
+    image: "{{.Node.Labels.registry_hostname}}"/memcached
     restart: on-failure
     deploy:
       mode: global
@@ -127,9 +127,6 @@ services:
     depends_on:
       - radiamapi
       - radiamgui
-    deploy:
-      placement:
-        constraints: [node.role == manager]
 
   visualizer:
     image: dockersamples/visualizer:stable

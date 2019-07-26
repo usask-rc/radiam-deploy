@@ -41,6 +41,16 @@
   become: yes
   tags: [nginx]
 
+- name: Install passlib and docker libraries for .htpasswd use
+  pip:
+    name: [passlib, docker]
+  become: yes
+
+- pip:
+    name: [passlib, docker]
+    executable: pip3
+  become: yes
+
 - name: Generate .htpasswd credentials for registry
   htpasswd:
     path: /etc/nginx/conf.d/nginx.htpasswd
@@ -81,6 +91,11 @@
   become: yes
   tags: registry
 
+- name: Start docker registry
+  command: /etc/rc.local
+  become: yes
+  tags: registry
+
 - name: Login to docker registry to create cached credentials for root user.
   docker_login:
     registry: "{{ inventory_hostname }}"
@@ -88,7 +103,4 @@
     password: "{{ registry_password }}"
   become: yes
 
-- name: Start docker registry
-  command: /etc/rc.local
-  become: yes
-  tags: registry
+

@@ -26,10 +26,12 @@ skip_docker_py: False # if true, skip the docker-py
 docker_stack_add_cleanjob: True # Kill dangling images on a timer.
 docker_stack_auto_reload: True # Auto-reload new images from registry.
 
-
-repo_uri: "git.computecanada.ca/radiam/radiam-api"
 service_def_path: "api/prod.yml"
 
+# Swarm labels
+
+#pswarm_labels='["libvirt", "docker", "foo", "bar"]'
+swarm_labels: '["registry_host=foo"]'
 
 # Secure credential passthrough to encrypted vars file
 
