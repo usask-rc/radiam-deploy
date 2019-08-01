@@ -6,7 +6,7 @@
   tags: [stack-deploy]
 
 - name: Include role variables.
-  include_vars: ansible-dockerswarm.yml
+  include_vars: ansible-dockerswarm-vars.yml
   tags: [stack-deploy]
 
 # Makes sure that the repo cache is fresh
@@ -27,8 +27,10 @@
 # Add secrets to swarm
 - include: swarm-secrets.yml
   tags: [swarm-secrets]
+  when: not skip_swarm and inventory_hostname == groups['docker_swarm_manager'][0]
 
 # Deploy a Stack on the Docker Swarm Cluster
 - include: swarm_stack.yml
   when: not skip_swarm and inventory_hostname == groups['docker_swarm_manager'][0]
   tags: [stack-deploy]
+

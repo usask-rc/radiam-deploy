@@ -7,7 +7,7 @@ POSTGRES_VERSION=11.2-alpine
 MEMCACHED_VERSION=1.5-alpine
 NGINX_VERSION=1.15
 
-REGISTRY_ENDPOINT=$(/bin/hostname --fqdn)
+REGISTRY_ENDPOINT=$(/bin/hostname)
 
 echo -n "Installing elasticsearch image"
 docker pull docker.elastic.co/elasticsearch/elasticsearch:$ES_VERSION && \

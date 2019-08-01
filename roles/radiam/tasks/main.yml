@@ -5,22 +5,17 @@
 
 - name: Create configuration directory
   file:
-    path: /etc/compose/radiam-api
+    path: /etc/compose/
     state: directory
     mode: 0700
     owner: ubuntu
     group: ubuntu
   become: yes
 
-- name: Get updated files from git repository
-  git:
-    repo: https://{{ gituser }}:{{ gitpassword }}@{{ repo_uri }}
-    dest: /etc/compose/radiam-api
-
 - name: Validate configuration
   command: docker-compose -f prod.yml config -q
   args:
-    chdir: /etc/compose/radiam-api/api
+    chdir: /etc/compose/
 
 # Install and start services
 

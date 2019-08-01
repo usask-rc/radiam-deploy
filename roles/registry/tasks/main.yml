@@ -61,6 +61,14 @@
     password: "{{ registry_password }}"
   become: yes
 
+- name: Add directory for registry images.
+  file:
+    path: /mnt/registry_images
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  become: yes
 
 # Docker login to generate creds for root at end
 
