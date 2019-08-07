@@ -10,6 +10,8 @@
 
 # Deploy single-host radiam-api
 
+** DEPRECATED **
+
 *Purpose*: Deploy radiam-api and radiam-gui projecs on a single host.
 
 *Howto*: ansible-playbook -i <inventory file (.ini)> radiam-singlenode.yml
@@ -26,4 +28,4 @@
 
 *Purpose*: Deploy radiam api and gui on a docker swarm cluster.
 
-*Howto*: ansible-playbook -i <inventory file (.ini)> deploy-swarm.yml
+*Howto*: ansible-playbook -i <inventory file (.ini)> deploy-swarm.yml --vault-password-file=<local vault password file>
