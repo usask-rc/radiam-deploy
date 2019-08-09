@@ -59,7 +59,7 @@ services:
   radiamapi:
     restart: on-failure
     image: build.radiam.ca/radiam-api
-    command: ["/wait-for-it/wait-for-it.sh", "db:5432", "-s", "--timeout=60", "--", "gunicorn", "--bind", ":8000", "--reload", "radiamsec.wsgi:application"]
+    command: ["/wait-for-it/wait-for-it.sh", "db:5432", "-s", "--timeout=60", "--", "gunicorn", "--bind", ":8000", "--reload", "radiam.wsgi:application"]
     environment:
       - SESSIONAUTH=1
     healthcheck:
