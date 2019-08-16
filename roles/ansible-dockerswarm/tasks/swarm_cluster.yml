@@ -163,13 +163,13 @@
   become: yes
   tags: [systemd]
 
-- name: Add registry hostname as label to master nodes.
-  docker_node:
-    hostname: "{{ ansible_fqdn }}"
-    labels:
-      registry_hostname: "{{ groups['registry-hosts'][0] }}"
-    labels_state: replace
-  become: yes
-  when: "'docker_swarm_manager' in group_names"
-  tags: [swarm-labels]
+#- name: Add registry hostname as label to master nodes.
+#  docker_node:
+#    hostname: "{{ ansible_fqdn }}"
+#    labels:
+#      registry_hostname: "{{ groups['registry-hosts'][0] }}"
+#    labels_state: replace
+#  become: yes
+#  when: "'docker_swarm_manager' in group_names"
+#  tags: [swarm-labels]
 

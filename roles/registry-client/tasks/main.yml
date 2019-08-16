@@ -3,6 +3,7 @@
 - include_vars:
     dir: vars
     extensions: [yml]
+  tags: [registry-client]
 
 - name: Login to docker registry to cache credentials.
   docker_login:
@@ -10,6 +11,7 @@
     username: "{{ registry_user }}"
     password: "{{ registry_password }}"
   become: yes
+  tags: [registry-client]
 
 - name: When jenkins host, cache credentials under the jenkins username.
   docker_login:
@@ -19,4 +21,5 @@
   when: "inventory_hostname == groups['radiam-jenkins-hosts'][0]"
   become_user: jenkins
   become: yes
+  tags: [registry-client]
 

@@ -2,7 +2,7 @@
 
 # This will populate a local registry with defined versions of the radiam external images.
 
-ES_VERSION=6.4.2
+ES_VERSION=6.8.2
 POSTGRES_VERSION=11.2-alpine
 MEMCACHED_VERSION=1.5-alpine
 NGINX_VERSION=1.15

@@ -2,6 +2,19 @@ version: '3.6'
 
 services:
 
+  # Image to provide easy access to persistent shared volumes in one place.
+  debugger:
+    image: ubuntu
+    command: tail -F anything
+    volumes:
+      - elasticsearch_data_vol:/elastic_data
+      - postgres_data_vol:/pg_data
+      - static_volume:/static_data
+      - icon_uploads_volume:/icon_data
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
   # Elasticsearch. See README for necessary host settings.
   elasticsearch:
     image: build.radiam.ca/elastic
