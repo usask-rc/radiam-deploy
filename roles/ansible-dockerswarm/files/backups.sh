@@ -39,3 +39,7 @@ docker exec $ESCONT curl -s -XDELETE "localhost:9200/_snapshot/esbackup/snapshot
 
 # Tell ES to perform the snapshot, do not wait for completion
 docker exec $ESCONT curl -s -XPUT "localhost:9200/_snapshot/esbackup/snapshot_1" -H "Content-Type: application/json;charset=UTF-8" -d '{"ignore_unavailable": true }' > /dev/null
+
+#
+# If you want to check on the state of the ES snapshot, run this command on the host:
+#    docker exec `docker container ls | grep elastic | cut -f 1 -d ' '` curl -XGET "localhost:9200/_snapshot/esbackup/snapshot_1?pretty"
