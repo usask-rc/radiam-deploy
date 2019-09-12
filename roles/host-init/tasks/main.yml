@@ -88,9 +88,9 @@
 - name: Cron job to renew letsencrypt certificates
   become: yes
   cron:
-      hour: 6
-      minute: 0
-      day: 1,15
+      hour: "6"
+      minute: "0"
+      day: "1,15"
       job: "(/usr/sbin/service nginx stop && /usr/bin/certbot renew && /usr/sbin/service nginx start)"
       name: "Renew letsencrypts certificates"
       state: present
@@ -133,9 +133,9 @@
 - name: Add cron job for weekly updates.
   cron:
     name: Check for updates.
-    day: 1,15
-    hour: 1
-    minute: 0
+    day: "1,15"
+    hour: "1"
+    minute: "0"
     job: "apt-get update"
   become: yes
   tags: hosts-setup
@@ -143,9 +143,9 @@
 - name: Add cron job for weekly updates.
   cron:
     name: Do dist-upgrade.
-    day: 1,15
-    hour: 2
-    minute: 0
+    day: "1,15"
+    hour: "2"
+    minute: "0"
     job: "(export PATH=/bin:/usr/bin:/sbin:/usr/sbin && export DEBIAN_FRONTEND=noninteractive && apt-get dist-upgrade -y > /dev/null)"
   become: yes
   tags: hosts-setup
@@ -153,9 +153,9 @@
 - name: Add cron job to reboot after kernel upgrades
   cron:
     name: Reboot after kernel upgrades
-    day: 1,15
-    hour: 3
-    minute: 0
+    day: "1,15"
+    hour: "3"
+    minute: "0"
     job: "(stat /var/run/reboot-required && /sbin/reboot)"
   become: yes
   tags: hosts-setup

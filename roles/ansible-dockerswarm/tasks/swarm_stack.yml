@@ -109,9 +109,9 @@
 - name: Add cron job for backups only on swarm master
   cron:
     name: Radiam backups
-    day: *
-    hour: 3
-    minute: 15
+    day: "*"
+    hour: "3"
+    minute: "15"
     job: "/home/ubuntu/backups.sh"
   when: not skip_swarm and inventory_hostname == groups['docker_swarm_manager'][0]
   tags: [service-def-path]
