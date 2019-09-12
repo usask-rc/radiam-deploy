@@ -20,6 +20,20 @@
   become: yes
   tags: hosts-setup
 
+- name: Create directories for backups
+  become: yes
+  file:
+      path="{{ item }}"
+      state="directory"
+      owner="root"
+      group="root"
+      mode="0755"
+  with_items:
+    - /var/backups/docker
+    - /var/backups/docker/db
+    - /var/backups/docker/es
+  tags: hosts-setup
+  
 # Add certificates
 - name: Add the certbot repository to apt
   apt_repository:

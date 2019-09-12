@@ -97,3 +97,21 @@
   become: yes
   tags: [service-def-path]
 
+- name: Install backups script
+  copy:
+    src: backups.sh
+    dest: /home/ubuntu/backups.sh
+    mode: 0750
+    owner: ubuntu
+    group: ubuntu
+  tags: [service-def-path]
+
+- name: Add cron job for backups only on swarm master
+  cron:
+    name: Radiam backups
+    day: *
+    hour: 3
+    minute: 15
+    job: "/home/ubuntu/backups.sh"
+  when: not skip_swarm and inventory_hostname == groups['docker_swarm_manager'][0]
+  tags: [service-def-path]

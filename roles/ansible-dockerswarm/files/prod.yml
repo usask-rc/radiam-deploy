@@ -20,8 +20,10 @@ services:
     image: build.radiam.ca/elastic
     volumes:
       - elasticsearch_data_vol:/usr/share/elasticsearch/data
+      - /var/backups/docker/es:/backups  # host volume for backups
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - 'path.repo=/backups'
     ulimits:
       memlock:
         soft: -1
@@ -47,6 +49,7 @@ services:
       retries: 5
     volumes:
       - postgres_data_vol:/var/lib/postgresql/data
+      - /var/backups/docker/db:/backups  # host volume for backups
     deploy:
       placement:
         constraints: [node.role == manager]
