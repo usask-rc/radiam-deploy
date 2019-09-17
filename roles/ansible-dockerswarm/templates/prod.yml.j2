@@ -28,7 +28,6 @@ services:
       memlock:
         soft: -1
         hard: -1
-    restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9200"]
       interval: 30s
@@ -41,7 +40,6 @@ services:
   # Postgres
   db:
     image: build.radiam.ca/postgres
-    restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 30s
@@ -73,7 +71,6 @@ services:
 
   # Django startup.
   radiamapi:
-    restart: on-failure
     image: build.radiam.ca/radiam-api:{{radiam_api_version_tag}}
     command: ["/wait-for-it/wait-for-it.sh", "db:5432", "-s", "--timeout=60", "--", "gunicorn", "--bind", ":8000", "--reload", "radiam.wsgi:application"]
     environment:
@@ -104,7 +101,6 @@ services:
   migration:
     image: build.radiam.ca/radiam-api:{{radiam_api_version_tag}}
     command: ["/wait-for-it/wait-for-it.sh", "db:5432", "-s", "--timeout=60", "--", "python", "/code/manage.py", "migrate", "--noinput"]
-    restart: on-failure
     depends_on:
       - db
     deploy:
@@ -120,12 +116,10 @@ services:
 # Radiam GUI
   radiamgui:
     image: build.radiam.ca/radiam-gui:{{radiam_gui_version_tag}}
-    restart: on-failure
     deploy:
       mode: global
 
   nginx:
-    restart: on-failure
     image: build.radiam.ca/nginx-radiam
     ports:
       - 80:80
