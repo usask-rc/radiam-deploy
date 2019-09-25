@@ -1,27 +1,10 @@
 127.0.0.1   localhost   
 
 # local routes for internal traffic
-192.168.211.15    dev1-web-1.frdr.ca dev1-web-1
-192.168.211.8    dev1-am-1.frdr.ca dev1-am-1 
-192.168.211.5    dev1-am-2.frdr.ca dev1-am-2 
-
-192.168.5.9      test-am-1.frdr.ca test-am-1 
-192.168.5.7     test-am-2.frdr.ca test-am-2 
-
-192.168.164.5    demo-am-1.frdr.ca demo-am-1
-192.168.164.11   demo-web-1.frdr.ca demo-web-1
-192.168.164.6    demo-am-2.frdr.ca demo-am-2
-192.168.179.19   demo-db-1.frdr.ca demo-db-1
-
-192.168.102.8    prod-db-1.frdr.ca prod-db-1
-192.168.102.7    prod-am-1.frdr.ca prod-am-1
-192.168.102.9    prod-am-2.frdr.ca prod-am-2
-192.168.102.15    prod-am-3.frdr.ca prod-am-3
-192.168.102.11   prod-am-4.frdr.ca prod-am-4
-192.168.102.4    prod-web-1.frdr.ca prod-web-1
-192.168.102.12   prod-monitor.frdr.ca prod-monitor
-
 192.168.175.6   beta.radiam.ca
 192.168.175.8   dev2.radiam.ca
 192.168.175.11  dev3.radiam.ca
 192.168.175.10  dev4.radiam.ca
+192.168.233.6   dev5.radiam.ca
+192.168.233.16  dev6.radiam.ca
+192.168.233.7   dev7.radiam.ca
