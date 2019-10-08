@@ -97,25 +97,19 @@
       user: root
   tags: cert-install
 
-- name: Copy correct certificate private key for nginx
-  copy:
-    dest: /etc/ssl/private/frdr.key
+- name: Link correct certificate private key for nginx
+  file:
+    state: link
+    path: /etc/ssl/private/frdr.key
     src: /etc/letsencrypt/live/{{ inventory_hostname }}/privkey.pem
-    remote_src: yes
-    owner: root
-    group: root
-    mode: 0600
   become: yes
   tags: cert-install
 
 - name: Copy correct certificage for nginx
-  copy:
-    dest: /etc/ssl/certs/frdr.crt
+  file:
+    state: link
+    path: /etc/ssl/certs/frdr.crt
     src: /etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem
-    remote_src: yes
-    owner: root
-    group: root
-    mode: 0611
   become: yes
   tags: cert-install
 

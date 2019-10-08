@@ -8,11 +8,12 @@ WorkingDirectory=/etc/compose/
 Type=oneshot
 RemainAfterExit=yes
 
--ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull
+ExecStartPre=-/usr/local/bin/docker-compose -f prod.yml pull
 ExecStart=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
 ExecStop=/usr/bin/docker stack rm radiam-full
 
--ExecReload=/usr/local/bin/docker-compose -f prod.yml pull
+ExecStop=/bin/sleep 60
+ExecReload=-/usr/local/bin/docker-compose -f prod.yml pull
 ExecReload=/usr/bin/docker stack deploy --prune --compose-file prod.yml radiam-full
 
 [Install]
