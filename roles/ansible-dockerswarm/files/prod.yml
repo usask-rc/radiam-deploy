@@ -122,7 +122,8 @@ services:
     image: build.radiam.ca/radiam-gui:{{radiam_gui_version_tag}}
     restart: on-failure
     deploy:
-      mode: global
+      placement:
+        constraints: [node.role == manager]
 
   nginx:
     restart: on-failure
