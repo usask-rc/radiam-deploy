@@ -16,7 +16,6 @@
 # echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
 
 /usr/bin/docker system prune -af
-/usr/bin/docker rm -f  registry || true
 /usr/bin/docker run -d \
                 --restart=always \
                 --name registry \
