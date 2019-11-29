@@ -117,7 +117,17 @@ services:
   radiamgui:
     image: build.radiam.ca/radiam-gui:{{radiam_gui_version_tag}}
     deploy:
-      mode: global
+      placement:
+        constraints: [node.role == manager]
+
+#  osfconnector:
+#    image: build.radiam.ca/radiam-osf
+#    command: ["/wait-for-it/wait-for-it.sh", "nginx:80", "-s", "--timeout=60", "--", "python", "osf_connector.py"]
+#    depends_on:
+#      - nginx
+#    secrets:
+#      - POSTGRES_USER
+#      - POSTGRES_PASSWORD
 
   nginx:
     image: build.radiam.ca/nginx-radiam

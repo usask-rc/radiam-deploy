@@ -3,7 +3,7 @@
 # Variables setup
 - name: Include os-specific variables.
   include_vars: "{{ ansible_os_family }}.yml"
-  tags: [stack-deploy]
+  tags: [stack-deploy, service-def-path]
 
 - name: Include role variables.
   include_vars: ansible-dockerswarm-vars.yml
