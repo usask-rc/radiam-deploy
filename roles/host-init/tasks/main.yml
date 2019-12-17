@@ -96,6 +96,7 @@
       state: present
       user: root
   tags: cert-install
+  when: "'registry-hosts' in group_names"
 
 - name: Link correct certificate private key for nginx
   file:

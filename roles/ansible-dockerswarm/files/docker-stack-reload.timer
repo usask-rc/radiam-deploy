@@ -2,6 +2,7 @@
 Description=Refresh images and update containers
 Requires=docker-stack.service
 After=docker-stack.service
+Restart=on-failure
 
 [Timer]
 OnCalendar=*:0/15

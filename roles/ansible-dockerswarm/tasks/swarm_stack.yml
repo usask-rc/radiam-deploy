@@ -15,16 +15,6 @@
   become: yes
   tags: [service-def-path]
 
-#- name: Install stack definition file
-#  copy:
-#    src: prod.yml
-#    dest: /etc/compose/prod.yml
-#    mode: 0640
-#    owner: ubuntu
-#    group: ubuntu
-#  tags: [service-def-path]
-#  become: yes
-
 - name: Install stack definition file
   template:
     src: prod.yml.j2
