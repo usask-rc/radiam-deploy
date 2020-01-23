@@ -88,8 +88,7 @@ services:
     volumes:
       - static_volume:/django/static  # bind the static volume
     deploy:
-      placement:
-        constraints: [node.role == manager]
+      mode: global
     secrets:
       - DJANGO_DEBUG
       - PROD_SECRET_KEY
@@ -117,8 +116,7 @@ services:
   radiamgui:
     image: build.radiam.ca/radiam-gui:{{radiam_gui_version_tag}}
     deploy:
-      placement:
-        constraints: [node.role == manager]
+      mode: global
 
 #  osfconnector:
 #    image: build.radiam.ca/radiam-osf
