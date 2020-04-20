@@ -118,14 +118,14 @@ services:
     deploy:
       mode: global
 
-#  osfconnector:
-#    image: build.radiam.ca/radiam-osf
-#    command: ["/wait-for-it/wait-for-it.sh", "nginx:80", "-s", "--timeout=60", "--", "python", "osf_connector.py"]
-#    depends_on:
-#      - nginx
-#    secrets:
-#      - POSTGRES_USER
-#      - POSTGRES_PASSWORD
+  osfconnector:
+    image: build.radiam.ca/radiam-osf
+    command: ["/wait-for-it/wait-for-it.sh", "nginx:80", "-s", "--timeout=60", "--", "python", "osf_connector.py"]
+    depends_on:
+      - nginx
+    secrets:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
 
   nginx:
     image: build.radiam.ca/nginx-radiam
